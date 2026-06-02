@@ -1,0 +1,1 @@
+-- TODO: CREATE TABLE users, prediction_history with UUID PKs

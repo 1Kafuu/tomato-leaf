@@ -1,0 +1,1 @@
+# TODO: Add dependencies (fastapi, uvicorn, sqlalchemy, asyncpg, supabase-py, opencv-python, numpy, scikit-fuzzy, python-multipart, pillow)

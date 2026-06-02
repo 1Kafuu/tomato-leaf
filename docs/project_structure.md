@@ -19,9 +19,7 @@ tomato-leaf/
 │   ├── (dashboard)/
 │   │   ├── dashboard/
 │   │   │   └── page.tsx
-│   │   ├── history/
-│   │   │   └── page.tsx
-│   │   └── upload/
+│   │   └── history/
 │   │       └── page.tsx
 │   ├── components/
 │   │   ├── ui/                  # Reusable UI components
@@ -29,7 +27,7 @@ tomato-leaf/
 │   │   └── prediction/          # Prediction components
 │   ├── lib/
 │   │   ├── api.ts               # Axios client
-│   │   ├── auth.ts              # Auth utilities
+│   │   ├── supabase.ts          # Supabase client (browser)
 │   │   └── utils.ts
 │   ├── hooks/
 │   │   ├── useAuth.ts
@@ -42,52 +40,68 @@ tomato-leaf/
 │
 ├── backend/                     # Python FastAPI
 │   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py              # FastAPI app + CORS + lifespan
+│   │   ├── dependencies.py      # FastAPI dependencies (get_db, get_current_user)
 │   │   ├── api/
+│   │   │   ├── __init__.py
 │   │   │   └── v1/
-│   │   │       ├── endpoints/
-│   │   │       │   ├── auth.py
-│   │   │       │   ├── prediction.py
-│   │   │       │   └── history.py
-│   │   │       └── router.py
+│   │   │       ├── __init__.py
+│   │   │       ├── router.py
+│   │   │       └── endpoints/
+│   │   │           ├── __init__.py
+│   │   │           ├── auth.py       # POST /auth/register, /auth/login
+│   │   │           ├── prediction.py # POST /predict
+│   │   │           └── history.py    # GET /history, GET /history/{id}
 │   │   ├── core/
-│   │   │   ├── config.py
-│   │   │   ├── security.py
-│   │   │   └── database.py
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py        # Pydantic Settings
+│   │   │   └── database.py      # SQLAlchemy async engine
 │   │   ├── models/
-│   │   │   ├── user.py
-│   │   │   └── prediction.py
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py          # DeclarativeBase
+│   │   │   ├── user.py          # User model (UUID)
+│   │   │   └── prediction.py    # PredictionHistory model
 │   │   ├── schemas/
+│   │   │   ├── __init__.py
 │   │   │   ├── user.py
 │   │   │   ├── prediction.py
 │   │   │   └── auth.py
 │   │   ├── services/
-│   │   │   ├── fuzzy_engine.py
-│   │   │   ├── image_processor.py
-│   │   │   └── auth_service.py
-│   │   ├── crud/
-│   │   │   ├── user.py
-│   │   │   └── prediction.py
-│   │   └── main.py
+│   │   │   ├── __init__.py
+│   │   │   ├── fuzzy_engine.py     # Triangular MF + 16 rules + Sugeno
+│   │   │   ├── image_processor.py  # HSV segment + 5 features
+│   │   │   └── supabase_service.py # Supabase Auth + Storage
+│   │   └── crud/
+│   │       ├── __init__.py
+│   │       ├── user.py
+│   │       └── prediction.py
 │   ├── requirements.txt
 │   └── .env.example
 │
 ├── docs/                        # Documentation
 │   ├── project_prd.md
+│   ├── prd_tomato_leaf.md       # PRD utama (acuan)
 │   ├── ai_model.md
 │   ├── database_schema.md
 │   └── project_structure.md
 │
 ├── public/                     # Static assets
 │   └── images/
+│       └── .gitkeep
 │
 ├── sql/                        # Database scripts
 │   ├── init.sql
-│   └── migrations/
+│   └── README.md
 │
+├── dataset/                     # PlantVillage dataset
+├── model-reference/             # Model development scripts
 ├── .env.example
 ├── package.json
 ├── tsconfig.json
 ├── next.config.ts
+├── eslint.config.mjs
+├── postcss.config.mjs
 └── README.md
 ```
 
@@ -102,7 +116,7 @@ tomato-leaf/
 | `(auth)/` | Route group untuk login & register |
 | `(dashboard)/` | Route group untuk dashboard pages |
 | `components/` | Reusable React components |
-| `lib/` | Utilities (API client, auth, utils) |
+| `lib/` | Utilities (API client, Supabase client, utils) |
 | `hooks/` | Custom React hooks |
 | `types/` | TypeScript type definitions |
 
@@ -110,19 +124,22 @@ tomato-leaf/
 
 | Folder | Description |
 |--------|-------------|
-| `api/v1/endpoints/` | API route handlers |
-| `core/` | Config, security, database setup |
-| `models/` | SQLAlchemy models |
-| `schemas/` | Pydantic schemas |
-| `services/` | Business logic (fuzzy engine, image processing) |
+| `api/` | API package init files |
+| `api/v1/` | API version 1 router + endpoints |
+| `api/v1/endpoints/` | API route handlers (auth, prediction, history) |
+| `core/` | Config, database setup |
+| `models/` | SQLAlchemy models (base.py, user, prediction) |
+| `schemas/` | Pydantic schemas for request/response |
+| `services/` | Business logic (fuzzy engine, image processing, Supabase) |
 | `crud/` | Database operations |
+| `dependencies.py` | FastAPI dependencies (get_db, get_current_user) |
 
 ### `sql/` - Database Scripts
 
 | File | Description |
 |------|-------------|
 | `init.sql` | Initial table creation |
-| `migrations/` | Schema change scripts |
+| `README.md` | Setup instructions for Supabase database |
 
 ---
 
@@ -132,7 +149,9 @@ tomato-leaf/
 |-------|-------------|
 | Frontend | Next.js 16, React 19, Tailwind CSS 4 |
 | Backend | Python, FastAPI |
-| Database | PostgreSQL |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth |
+| Storage | Supabase Storage |
 | AI/ML | OpenCV, NumPy, scikit-fuzzy |
 | Deployment | Vercel (frontend), Railway/Render (backend) |
 
@@ -141,15 +160,13 @@ tomato-leaf/
 ## API Communication
 
 ```
-┌──────────────┐      axios       ┌──────────────┐
-│   Frontend   │  ──────────────►│    Backend   │
-│  (Next.js)   │◄───────────────  │  (FastAPI)   │
-└──────────────┘                  └──────────────┘
-                                          │
-                                          ▼
-                                   ┌──────────────┐
-                                   │  PostgreSQL  │
-                                   └──────────────┘
+┌──────────────┐      axios       ┌──────────────┐       ┌──────────────┐
+│   Frontend   │  ──────────────►│    Backend   │──────►│   Supabase   │
+│  (Next.js)   │◄───────────────  │  (FastAPI)   │◄──────│  (PostgreSQL │
+└──────────────┘                  └──────────────┘       │   + Auth +   │
+                                                          │   Storage)   │
+                                                          └──────────────┘
 ```
 
 Frontend berkomunikasi dengan backend via HTTP REST API menggunakan Axios.
+Backend menggunakan Supabase untuk database (asyncpg), autentikasi, dan penyimpanan gambar.
