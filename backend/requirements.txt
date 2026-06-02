@@ -1,1 +1,3 @@
-# TODO: Add dependencies (fastapi, uvicorn, sqlalchemy, asyncpg, supabase-py, opencv-python, numpy, scikit-fuzzy, python-multipart, pillow)
+opencv-python>=4.9.0
+numpy>=1.26.0
+Pillow>=10.0.0
