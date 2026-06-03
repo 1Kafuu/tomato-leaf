@@ -1,1 +1,13 @@
-# TODO: Add dependencies (fastapi, uvicorn, sqlalchemy, asyncpg, supabase-py, opencv-python, numpy, scikit-fuzzy, python-multipart, pillow)
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+pydantic-settings
+sqlalchemy
+asyncpg
+greenlet
+supabase
+opencv-python-headless
+numpy
+pillow
+scikit-fuzzy

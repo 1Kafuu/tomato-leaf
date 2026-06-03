@@ -41,3 +41,11 @@ yarn-error.log*
 next-env.d.ts
 model-reference/
 dataset/
+
+# Python & Virtual Environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
