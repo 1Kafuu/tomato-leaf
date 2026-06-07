@@ -10,7 +10,11 @@ elif DB_URL and DB_URL.startswith("postgresql://"):
     DB_URL = DB_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 if DB_URL:
-    engine = create_async_engine(DB_URL, echo=False)
+    engine = create_async_engine(
+        DB_URL,
+        echo=False,
+        connect_args={"statement_cache_size": 0},
+    )
     AsyncSessionLocal = async_sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False
     )

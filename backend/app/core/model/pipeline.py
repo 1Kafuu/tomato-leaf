@@ -45,5 +45,8 @@ def predict(image_path: str) -> dict:
         "severity_level": classification["severity_level"],
         "plant_status": classification["plant_status"],
         "spot_area": features["spot_area"],
+        "yellow_ratio": features["yellow_ratio"],
+        "brown_ratio": features["brown_ratio"],
+        "dark_ratio": features["dark_ratio"],
         "color_change": features["color_change"],
     }
