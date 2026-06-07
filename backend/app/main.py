@@ -10,13 +10,19 @@ from app.api.v1.router import api_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database tables on startup
-    if engine:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+    if engine is not None:
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+        except Exception as e:
+            print(f"Warning: Could not initialize database: {e}")
     yield
     # Cleanup on shutdown
-    if engine:
-        await engine.dispose()
+    if engine is not None:
+        try:
+            await engine.dispose()
+        except Exception as e:
+            print(f"Warning: Could not dispose database: {e}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

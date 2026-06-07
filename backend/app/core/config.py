@@ -5,7 +5,6 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Tomato Leaf Health Detection API"
     API_V1_STR: str = "/api/v1"
     
-    # Placeholder for external configurations (left empty as requested)
     DATABASE_URL: str = ""
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
