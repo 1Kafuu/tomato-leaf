@@ -8,6 +8,7 @@ class PredictionFeatures(BaseModel):
     color_change: float
     yellow_ratio: float
     brown_ratio: float
+    dark_ratio: float
     spot_count: int
     texture_var: float
 
@@ -65,6 +66,7 @@ class PredictionRecordResponse(BaseModel):
     plant_status: str
     fuzzy_score: float
     severity_score: float
+    features: PredictionFeatures
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)

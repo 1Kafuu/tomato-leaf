@@ -61,8 +61,35 @@ Swagger UI will be available at: http://localhost:8000/docs
 - `POST /api/v1/auth/register`: Register a new user with `email`, `full_name`, and `password`.
 - `POST /api/v1/auth/login`: Login user and receive a JWT Bearer token.
 
-### Prediction
+### Prediction (v1)
 - `POST /api/v1/predict`: Requires authentication. Expects a `multipart/form-data` payload containing an image file (field name: `image`). Returns the fuzzy score, severity, disease name, and the extracted features.
+
+
+### Prediction (v2)
+- `POST /api/v2/predict`: Requires authentication. Same as v1 but auto-saves result to database and returns full `PredictionRecordResponse` including `severity_score` field.
+
+**v2 Response:**
+```json
+{
+  "id": "uuid",
+  "image_url": "https://storage.supabase.co/images/uuid.jpg",
+  "severity_level": "Ringan",
+  "plant_status": "Terinfeksi",
+  "fuzzy_score": 71.25,
+  "severity_score": 0.7125,
+  "features": {
+    "spot_area": 12.34,
+    "color_change": 30.50,
+    "yellow_ratio": 15.20,
+    "brown_ratio": 2.80,
+    "dark_ratio": 12.50,
+    "spot_count": 5,
+    "texture_var": 0.45
+  },
+  "created_at": "2026-06-01T10:30:00Z"
+}
+```
+
 
 ### History
 - `GET /api/v1/history/`: Requires authentication. Fetches a paginated list of user's past predictions.

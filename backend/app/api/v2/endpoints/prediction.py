@@ -6,7 +6,7 @@ import os
 
 from app.dependencies import get_db, get_current_user
 from app.models.user import User
-from app.schemas.prediction import PredictionRecordResponse
+from app.schemas.prediction import PredictionRecordResponse, PredictionFeatures
 from app.crud.prediction import create_prediction_record
 from app.core.model.pipeline import predict as model_predict
 from app.services.supabase_service import upload_image_to_storage
@@ -67,5 +67,14 @@ async def predict_disease_v2(
         plant_status=prediction_record.plant_status,
         fuzzy_score=prediction_record.fuzzy_score,
         severity_score=prediction_record.severity_score,
+        features=PredictionFeatures(
+            spot_area=features["spot_area"],
+            color_change=features["color_change"],
+            yellow_ratio=features["yellow_ratio"],
+            brown_ratio=features["brown_ratio"],
+            dark_ratio=features["dark_ratio"],
+            spot_count=result.get("spot_count", 0),
+            texture_var=result.get("texture_var", 0.0),
+        ),
         created_at=prediction_record.created_at,
     )

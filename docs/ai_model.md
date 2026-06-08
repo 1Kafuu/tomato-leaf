@@ -704,6 +704,36 @@ Output numerik hasil defuzzifikasi (z) diklasifikasikan ke dalam kategori penyak
 | feature_statistics.csv | `model-reference/feature_statistics.csv` | Statistik deskriptif per fitur (min, max, mean, median, std, P1, P99) |
 | cluster_report.csv | `model-reference/cluster_report.csv` | Silhouette score dan pusat cluster K-Means |
 
+## Code Reference (Production)
+
+| Module | Path | Fungsi |
+|---|---|---|
+| `pipeline.py` | `backend/app/core/model/pipeline.py` | Orchestrates full prediction flow: segment → extract → fuzzy inference |
+| `segmenter.py` | `backend/app/core/model/segmenter.py` | Leaf segmentation via HSV green mask + largest contour |
+| `feature_extractor.py` | `backend/app/core/model/feature_extractor.py` | Extracts 5 visual features from segmented leaf |
+| `fuzzy_engine.py` | `backend/app/core/model/fuzzy_engine.py` | Triangular MF + 16-rule Sugeno inference engine |
+| `config.py` | `backend/app/core/model/config.py` | Fuzzy parameters (MF bounds, rule constants) |
+
+
+### Pipeline Flow (Production Code)
+
+```
+Input Image
+    ↓
+segmenter.py → Binary leaf mask (HSV green mask + contour)
+    ↓
+feature_extractor.py → 5 features (spot_area, yellow_ratio, brown_ratio, dark_ratio, color_change)
+    ↓
+fuzzy_engine.py → Fuzzification → Rule evaluation (16 rules) → Defuzzification (weighted average)
+    ↓
+Output: {disease_name, fuzzy_score, severity_level, plant_status, features}
+```
+
+### API Integration
+
+- **v1** (`POST /api/v1/predict`): Returns prediction result directly
+- **v2** (`POST /api/v2/predict`): Same logic via `pipeline.predict()`, auto-saves to DB, returns `PredictionRecordResponse`
+
 ---
 
 # AI Risks and Mitigation
