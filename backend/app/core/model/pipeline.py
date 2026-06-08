@@ -21,10 +21,13 @@ def predict(image_path: str) -> dict:
         Dictionary dengan format:
             disease_name (str): Nama penyakit hasil diagnosis.
             fuzzy_score (float): Skor fuzzy (0-100).
-            severity_level (str): Tingkat keparahan ("" jika sehat).
+            severity_level (str): Tingkat keparahan.
             plant_status (str): "Sehat" atau "Terinfeksi".
             spot_area (float): Persentase luas bercak.
-        color_change (float): Persentase total perubahan warna.
+            yellow_ratio (float): Persentase area kuning.
+            brown_ratio (float): Persentase area coklat.
+            dark_ratio (float): Persentase area gelap.
+            color_change (float): Persentase total perubahan warna.
     """
     # 1. Segmentasi daun
     leaf_mask, masked_img = segment(image_path)

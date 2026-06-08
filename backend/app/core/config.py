@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = ""
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
     SECRET_KEY: str = "supersecretkey" # Used for JWT
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
