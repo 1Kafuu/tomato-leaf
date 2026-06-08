@@ -5,16 +5,18 @@ from typing import Optional
 
 class PredictionFeatures(BaseModel):
     spot_area: float
+    color_change: float
     yellow_ratio: float
     brown_ratio: float
     dark_ratio: float
-    color_change: float
+    spot_count: int
+    texture_var: float
 
 class PredictionData(BaseModel):
-    disease_name: str
-    fuzzy_score: float
-    severity_level: str
     plant_status: str
+    severity_level: str
+    fuzzy_score: float
+    severity_score: float
     features: PredictionFeatures
 
 class PredictionResponse(BaseModel):
@@ -25,29 +27,58 @@ class PredictionResponse(BaseModel):
 class PredictionHistoryResponse(BaseModel):
     id: UUID
     image_url: str
-    disease_name: str
-    fuzzy_score: float
     severity_level: str
+    plant_status: str
+    fuzzy_score: float
+    severity_score: float
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
 
 class PredictionHistoryDetailResponse(PredictionHistoryResponse):
     spot_area: float
+    color_change: float
     yellow_ratio: float
     brown_ratio: float
-    dark_ratio: float
-    color_change: float
+    spot_count: int
+    texture_var: float
 
 class FeatureData(BaseModel):
     spot_area: float
+    color_change: float
     yellow_ratio: float
     brown_ratio: float
-    dark_ratio: float
-    color_change: float
+    spot_count: int
+    texture_var: float
 
 class Pagination(BaseModel):
     page: int
     size: int
     total_items: int
     total_pages: int
+
+
+# PredictionRecord schemas
+class PredictionRecordResponse(BaseModel):
+    id: UUID
+    success: bool = True
+    message: str = "Prediksi berhasil"
+    image_url: str
+    plant_status: str
+    severity_level: str
+    fuzzy_score: float
+    severity_score: float
+    features: PredictionFeatures
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PredictionRecordDetailResponse(PredictionRecordResponse):
+    spot_area: float
+    color_change: float
+    yellow_ratio: float
+    brown_ratio: float
+    dark_ratio: float
+    spot_count: int
+    texture_var: float

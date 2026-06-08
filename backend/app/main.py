@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine
 from app.models.base import Base
-from app.api.v1.router import api_router
+from app.api.v1.router import api_router as api_router_v1
+from app.api.v2.router import api_router as api_router_v2
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,7 +40,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(api_router_v1, prefix=settings.API_V1_STR)
+app.include_router(api_router_v2, prefix="/api/v2")
 
 @app.get("/")
 def root():

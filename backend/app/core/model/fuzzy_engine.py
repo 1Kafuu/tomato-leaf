@@ -1,11 +1,12 @@
 """
-Fuzzy Sugeno Inference Engine (Orde 0)
+Fuzzy Sugeno Inference Engine (Orde 0) - 6 Features
 
 Tahapan:
     1. Fuzzification   - menghitung derajat keanggotaan dengan Triangular MF
     2. Rule Evaluation  - 16 rules, operator AND (minimum)
     3. Defuzzification  - Weighted Average Sugeno
-    4. Classification   - mapping skor ke kategori penyakit
+    4. Classification   - mapping fuzzy score ke severity level
+    5. Severity Score   - weighted calculation dari 6 fitur
 """
 
 from app.core.model.config import (
@@ -16,8 +17,9 @@ from app.core.model.config import (
     RULES,
     OUTPUT_CLASSES,
     DEFAULT_FUZZY_SCORE,
+    FEATURE_WEIGHTS,
+    FEATURE_NORM_RANGES,
 )
-
 
 def triangular_mf(x: float, a: float, b: float, c: float) -> float:
     """
@@ -40,25 +42,15 @@ def triangular_mf(x: float, a: float, b: float, c: float) -> float:
         return (c - x) / (c - b)
     return 0.0
 
-
 def fuzzify(value: float, mf_dict: dict, labels: list) -> dict:
     """
     Fuzzifikasi nilai crisp ke dalam derajat keanggotaan untuk setiap kategori.
-
-    Args:
-        value: Nilai input numerik.
-        mf_dict: Dictionary {label: (a, b, c)} parameter MF.
-        labels: Urutan label kategori.
-
-    Returns:
-        Dictionary {label: derajat_keanggotaan}.
     """
     degrees = {}
     for label in labels:
         a, b, c = mf_dict[label]
         degrees[label] = triangular_mf(value, a, b, c)
     return degrees
-
 
 def infer(spot_area: float, color_change: float) -> float:
     """
@@ -80,7 +72,6 @@ def infer(spot_area: float, color_change: float) -> float:
     total_weighted_output = 0.0
 
     for spot_cat, color_cat, konstanta in RULES:
-        # Firing strength: operator AND = minimum
         alpha = min(spot_degrees[spot_cat], color_degrees[color_cat])
 
         if alpha > 0:
@@ -92,34 +83,68 @@ def infer(spot_area: float, color_change: float) -> float:
         return float(DEFAULT_FUZZY_SCORE)
 
     z = total_weighted_output / total_weight
-
-    # Clipping ke [0, 100]
     z = max(0.0, min(100.0, z))
 
     return round(z, 2)
 
-
 def classify(z: float) -> dict:
     """
-    Mengklasifikasikan fuzzy score ke kategori penyakit.
-
+    Mengklasifikasikan fuzzy score ke dalam kategori kesehatan tanaman.
+    
     Args:
         z: Fuzzy score (0-100).
-
+    
     Returns:
-        Dictionary: {disease_name, severity_level, plant_status}.
+        Dictionary: {severity_level, plant_status}.
     """
-    for min_score, max_score, disease, severity, status in OUTPUT_CLASSES:
+    for min_score, max_score, severity, status in OUTPUT_CLASSES:
         if min_score <= z <= max_score:
             return {
-                "disease_name": disease,
                 "severity_level": severity,
                 "plant_status": status,
             }
 
-    # Fallback (seharusnya tidak terjadi karena range 0-100 tercakup semua)
     return {
-        "disease_name": "Tidak Terdeteksi",
-        "severity_level": "",
+        "severity_level": "Tidak Diketahui",
         "plant_status": "Tidak Diketahui",
     }
+
+def normalize(value: float, min_val: float, max_val: float) -> float:
+    """
+    Normalisasi nilai ke skala 0-100.
+    
+    Args:
+        value: Nilai fitur aktual.
+        min_val: Nilai minimum rentang (berdasarkan P99).
+        max_val: Nilai maksimum rentang (berdasarkan P99).
+    
+    Returns:
+        Nilai ternormalisasi (0-100).
+    """
+    if max_val <= min_val:
+        return 0.0
+    normalized = ((value - min_val) / (max_val - min_val)) * 100.0
+    return max(0.0, min(100.0, normalized))
+
+def calculate_severity_score(features: dict) -> float:
+    """
+    Hitung severity score berbasis bobot fitur.
+    
+    Severity score tinggi = kondisi buruk (severity tinggi).
+    Severity score rendah = kondisi sehat.
+    
+    Args:
+        features: Dictionary dengan 6 fitur.
+    
+    Returns:
+        Severity score (0-100).
+    """
+    score = 0.0
+    
+    for feature_name, weight in FEATURE_WEIGHTS.items():
+        value = features.get(feature_name, 0.0)
+        min_val, max_val = FEATURE_NORM_RANGES[feature_name]
+        normalized = normalize(value, min_val, max_val)
+        score += weight * normalized
+    
+    return round(score, 2)
