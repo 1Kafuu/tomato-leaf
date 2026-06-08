@@ -61,3 +61,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+SESSION_CHANGELOG.md
+context.md
+research.md
+superpowers/
