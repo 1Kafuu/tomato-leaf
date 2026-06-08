@@ -43,10 +43,12 @@ async def predict_disease_v2(
     
     features = {
         "spot_area": result["features"]["spot_area"],
+        "color_change": result["features"]["color_change"],
         "yellow_ratio": result["features"]["yellow_ratio"],
         "brown_ratio": result["features"]["brown_ratio"],
         "dark_ratio": result["features"]["dark_ratio"],
-        "color_change": result["features"]["color_change"],
+        "spot_count": result["features"]["spot_count"],
+        "texture_var": result["features"]["texture_var"],
     }
     
     prediction_record = await create_prediction_record(
@@ -73,8 +75,8 @@ async def predict_disease_v2(
             yellow_ratio=features["yellow_ratio"],
             brown_ratio=features["brown_ratio"],
             dark_ratio=features["dark_ratio"],
-            spot_count=result.get("spot_count", 0),
-            texture_var=result.get("texture_var", 0.0),
+            spot_count=features["spot_count"],
+            texture_var=features["texture_var"],
         ),
         created_at=prediction_record.created_at,
     )

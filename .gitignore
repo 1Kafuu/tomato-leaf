@@ -52,7 +52,8 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 model-reference/
-dataset/
+dataset*/
+scripts/
 
 # Python & Virtual Environment
 .venv/
