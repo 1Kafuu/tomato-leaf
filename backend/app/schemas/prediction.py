@@ -61,9 +61,11 @@ class Pagination(BaseModel):
 # PredictionRecord schemas
 class PredictionRecordResponse(BaseModel):
     id: UUID
+    success: bool = True
+    message: str = "Prediksi berhasil"
     image_url: str
-    severity_level: str
     plant_status: str
+    severity_level: str
     fuzzy_score: float
     severity_score: float
     features: PredictionFeatures
