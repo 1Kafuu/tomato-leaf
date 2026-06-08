@@ -1,15 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import LogoPill from "../../components/landing/LogoPill";
 import Button from "../../components/landing/Button";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login, loading, error, user, hydrated } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+
+  useEffect(() => {
+    if (hydrated && user) router.replace("/dashboard");
+  }, [hydrated, user, router]);
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!email || !password || loading) return;
+    login(email, password);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-neutral-white">
@@ -59,7 +73,7 @@ export default function LoginPage() {
             diagnosis sebelumnya.
           </p>
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={onSubmit}>
             <div>
               <label
                 htmlFor="email"
@@ -217,8 +231,20 @@ export default function LoginPage() {
               </Link>
             </div>
 
+            {error && (
+              <p className="sm-default text-tomato-700 text-center" role="alert">
+                {error}
+              </p>
+            )}
+
             <div className="pt-2">
-              <Button text="Masuk" inv={true} icon={false} fullWidth={true} />
+              <Button
+                text={loading ? "Memproses..." : "Masuk"}
+                inv={true}
+                icon={false}
+                fullWidth={true}
+                disabled={loading}
+              />
             </div>
 
             <div className="relative my-6">

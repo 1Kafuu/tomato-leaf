@@ -17,6 +17,7 @@ import cv2
 
 from app.core.model.config import HSV_RANGES
 
+
 def extract(masked_img: np.ndarray, leaf_mask: np.ndarray) -> dict:
     """
     Ekstrak 6 fitur dari area daun.
@@ -76,7 +77,7 @@ def extract(masked_img: np.ndarray, leaf_mask: np.ndarray) -> dict:
         HSV_RANGES["dark"]["upper"],
     )
 
-    # 5. Color Change Severity - total perubahan warna (yellow + brown + dark)
+    # 5. Color Change Severity - total perubahan warna
     color_change = yellow_pct + brown_pct + dark_pct
 
     # 6. Spot Count - deteksi kontur bercak
