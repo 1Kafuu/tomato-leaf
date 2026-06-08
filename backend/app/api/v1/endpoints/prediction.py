@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
+import os
+import tempfile
 
 from app.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.schemas.prediction import PredictionResponse, PredictionData, PredictionFeatures
 from app.crud.prediction import create_prediction
-from app.services.image_processor import extract_features
-from app.services.fuzzy_engine import evaluate_fuzzy
+from app.core.model.pipeline import predict
 from app.services.supabase_service import upload_image_to_storage
 
 router = APIRouter()
@@ -25,45 +26,64 @@ async def predict_disease(
     
     if len(image_bytes) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Image size exceeds 10MB")
-        
-    # Process image
+
+    file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+    temp_file_path = None
     try:
-        features = extract_features(image_bytes)
+        with tempfile.NamedTemporaryFile(suffix=f".{file_ext}", delete=False) as tmp:
+            tmp.write(image_bytes)
+            tmp.flush()
+            temp_file_path = tmp.name
+
+        result = predict(temp_file_path)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-        
-    # Evaluate fuzzy logic
-    fuzzy_score, disease_name, severity = evaluate_fuzzy(
-        spot_area=features["spot_area"],
-        color_change=features["color_change"]
-    )
-    
-    # Generate unique filename for storage
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to run prediction model: {e}")
+    finally:
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.unlink(temp_file_path)
+            except OSError:
+                pass
+
     file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
     filename = f"{uuid.uuid4()}.{file_ext}"
-    
-    # Upload to storage
+
     image_url = await upload_image_to_storage(image_bytes, filename)
-    
-    plant_status = "Sehat" if disease_name in ["Sehat", "Sangat Sehat"] else "Terinfeksi"
-    
-    # Save to database
+    if not image_url:
+        raise HTTPException(status_code=500, detail="Failed to upload image to storage")
+
     prediction_record = await create_prediction(
         db=db,
         user_id=current_user.id,
         image_url=image_url,
-        features=features,
-        fuzzy_score=fuzzy_score,
-        disease_name=disease_name,
-        severity_level=severity
+        features={
+            "spot_area": result["spot_area"],
+            "yellow_ratio": result["yellow_ratio"],
+            "brown_ratio": result["brown_ratio"],
+            "dark_ratio": result["dark_ratio"],
+            "color_change": result["color_change"],
+        },
+        fuzzy_score=result["fuzzy_score"],
+        disease_name=result["disease_name"],
+        severity_level=result["severity_level"]
     )
     
     prediction_data = PredictionData(
-        disease_name=disease_name,
-        fuzzy_score=fuzzy_score,
-        severity_level=severity,
-        plant_status=plant_status,
-        features=PredictionFeatures(**features)
+        disease_name=result["disease_name"],
+        fuzzy_score=result["fuzzy_score"],
+        severity_level=result["severity_level"],
+        plant_status=result["plant_status"],
+        features=PredictionFeatures(
+            spot_area=result["spot_area"],
+            yellow_ratio=result["yellow_ratio"],
+            brown_ratio=result["brown_ratio"],
+            dark_ratio=result["dark_ratio"],
+            color_change=result["color_change"]
+        )
     )
-    
+
     return PredictionResponse(data=prediction_data)
