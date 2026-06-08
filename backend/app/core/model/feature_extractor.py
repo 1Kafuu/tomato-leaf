@@ -95,6 +95,7 @@ def extract(masked_img: np.ndarray, leaf_mask: np.ndarray) -> dict:
         "color_change": round(color_change, 2),
         "yellow_ratio": round(yellow_pct, 2),
         "brown_ratio": round(brown_pct, 2),
+        "dark_ratio": round(dark_pct, 2),
         "spot_count": spot_count,
         "texture_var": round(texture_var, 2),
     }

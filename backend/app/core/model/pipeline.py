@@ -51,6 +51,7 @@ def predict(image_path: str) -> dict:
             "color_change": features["color_change"],
             "yellow_ratio": features["yellow_ratio"],
             "brown_ratio": features["brown_ratio"],
+            "dark_ratio": features["dark_ratio"],
             "spot_count": features["spot_count"],
             "texture_var": features["texture_var"],
         },

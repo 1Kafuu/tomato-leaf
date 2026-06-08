@@ -55,3 +55,26 @@ class Pagination(BaseModel):
     size: int
     total_items: int
     total_pages: int
+
+
+# PredictionRecord schemas
+class PredictionRecordResponse(BaseModel):
+    id: UUID
+    image_url: str
+    severity_level: str
+    plant_status: str
+    fuzzy_score: float
+    severity_score: float
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PredictionRecordDetailResponse(PredictionRecordResponse):
+    spot_area: float
+    color_change: float
+    yellow_ratio: float
+    brown_ratio: float
+    dark_ratio: float
+    spot_count: int
+    texture_var: float
