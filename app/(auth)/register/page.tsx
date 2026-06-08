@@ -1,17 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import LogoPill from "../../components/landing/LogoPill";
 import Button from "../../components/landing/Button";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { register, loading, error, user, hydrated } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (hydrated && user) router.replace("/dashboard");
+  }, [hydrated, user, router]);
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!fullName || !email || !password) {
+      setFormError("Semua field wajib diisi");
+      return;
+    }
+    if (password.length < 8) {
+      setFormError("Kata sandi minimal 8 karakter");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setFormError("Konfirmasi kata sandi tidak cocok");
+      return;
+    }
+    if (!agree) {
+      setFormError("Anda harus menyetujui Syarat & Ketentuan");
+      return;
+    }
+    register(email, password, fullName);
+  };
 
   // Password strength calculation
   const getPasswordStrength = () => {
@@ -81,7 +112,7 @@ export default function RegisterPage() {
             riwayat diagnosis Anda.
           </p>
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={onSubmit}>
             <div>
               <label
                 htmlFor="fullName"
@@ -358,8 +389,20 @@ export default function RegisterPage() {
               </span>
             </label>
 
+            {(formError || error) && (
+              <p className="sm-default text-tomato-700 text-center" role="alert">
+                {formError || error}
+              </p>
+            )}
+
             <div className="pt-2">
-              <Button text="Daftar" inv={true} icon={false} fullWidth={true} />
+              <Button
+                text={loading ? "Memproses..." : "Daftar"}
+                inv={true}
+                icon={false}
+                fullWidth={true}
+                disabled={loading}
+              />
             </div>
 
             <div className="relative my-6">
