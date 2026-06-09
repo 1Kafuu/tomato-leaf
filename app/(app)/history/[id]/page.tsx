@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { api, getApiError } from "../../../lib/api";
+import { apiV2, getApiError } from "../../../lib/api";
 import LogoPill from "../../../components/landing/LogoPill";
 import {
   severityColorClasses,
@@ -28,7 +28,7 @@ export default function HistoryDetailPage() {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await api.get<PredictionHistoryDetail>(
+        const { data } = await apiV2.get<PredictionHistoryDetail>(
           `/history/${id}`
         );
         if (!cancelled) setData(data);

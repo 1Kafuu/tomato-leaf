@@ -40,7 +40,7 @@ export interface PredictionData {
   created_at?: string;
 }
 
-// History list item (tanpa features, dari V1 endpoint)
+// History list item (V2: PredictionRecordResponse, tanpa features detail)
 export interface PredictionHistoryItem {
   id: string;
   image_url: string;
@@ -51,7 +51,7 @@ export interface PredictionHistoryItem {
   created_at: string;
 }
 
-// History detail (dengan features)
+// History detail (V2: PredictionRecordDetailResponse, semua field flat + features)
 export interface PredictionHistoryDetail extends PredictionHistoryItem {
   spot_area: number;
   color_change: number;
@@ -60,6 +60,7 @@ export interface PredictionHistoryDetail extends PredictionHistoryItem {
   dark_ratio: number;
   spot_count: number;
   texture_var: number;
+  features?: PredictionFeatures;
 }
 
 // API error

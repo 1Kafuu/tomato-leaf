@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { api, apiV2, getApiError } from "@/app/lib/api";
+import { apiV2, getApiError } from "@/app/lib/api";
 import { validateImageFile } from "@/app/lib/utils";
 import type {
   PredictionData,
@@ -111,7 +111,8 @@ export function useHistory(limit = 10) {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get<PredictionHistoryItem[]>(
+      // V2: history pakai prediction_records (lengkap dengan 7 fitur)
+      const { data } = await apiV2.get<PredictionHistoryItem[]>(
         `/history/?skip=${skip}&limit=${limit}`
       );
       if (data.length < limit) setHasMore(false);

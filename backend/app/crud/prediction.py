@@ -68,6 +68,8 @@ async def create_prediction_record(
         color_change=features["color_change"],
         fuzzy_score=fuzzy_score,
         severity_score=severity_score,
+        spot_count=features.get("spot_count"),
+        texture_var=features.get("texture_var"),
         severity_level=severity_level,
         plant_status=plant_status,
     )

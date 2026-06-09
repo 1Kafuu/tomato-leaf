@@ -15,6 +15,18 @@ async def lifespan(app: FastAPI):
         try:
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
+            # Idempotent ALTER untuk kolom yang mungkin belum ada di tabel
+            # existing (create_all tidak menambah kolom baru ke tabel yang sudah dibuat).
+            async with engine.begin() as conn:
+                from sqlalchemy import text
+                await conn.execute(text(
+                    'ALTER TABLE prediction_records '
+                    'ADD COLUMN IF NOT EXISTS spot_count INTEGER'
+                ))
+                await conn.execute(text(
+                    'ALTER TABLE prediction_records '
+                    'ADD COLUMN IF NOT EXISTS texture_var NUMERIC(6, 2)'
+                ))
         except Exception as e:
             print(f"Warning: Could not initialize database: {e}")
     yield

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Numeric, ForeignKey
+from sqlalchemy import Column, String, DateTime, Numeric, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime, timezone
@@ -34,6 +34,8 @@ class PredictionRecord(Base):
     color_change = Column(Numeric(5, 2), nullable=False)
     fuzzy_score = Column(Numeric(5, 2), nullable=False)
     severity_score = Column(Numeric(5, 2), nullable=False)
+    spot_count = Column(Integer, nullable=True)
+    texture_var = Column(Numeric(6, 2), nullable=True)
     severity_level = Column(String(50), nullable=False)
     plant_status = Column(String(50), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
