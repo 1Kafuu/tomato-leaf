@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import icon from "../public/images/logo.svg";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,6 +17,9 @@ export const metadata: Metadata = {
   title: "TomaCheck - Deteksi Penyakit Daun Tomat",
   description:
     "Aplikasi berbasis web untuk mendeteksi kesehatan daun tomat melalui analisis citra digital menggunakan metode Fuzzy Sugeno Orde 0.",
+  icons: {
+    icon: icon.src,
+  },
 };
 
 export default function RootLayout({
