@@ -3,14 +3,19 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { api, getApiError } from "../../../lib/api";
+import { apiV2, getApiError } from "../../../lib/api";
 import LogoPill from "../../../components/landing/LogoPill";
 import {
-  diseaseColorClasses,
+  severityColorClasses,
   formatDate,
   formatPercent,
+  formatNumber,
 } from "../../../lib/utils";
-import type { PredictionHistoryDetail, DiseaseName } from "../../../types";
+import type {
+  PredictionHistoryDetail,
+  SeverityLevel,
+} from "../../../types";
+import { SEVERITY_META } from "../../../types";
 
 export default function HistoryDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +28,7 @@ export default function HistoryDetailPage() {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await api.get<PredictionHistoryDetail>(
+        const { data } = await apiV2.get<PredictionHistoryDetail>(
           `/history/${id}`
         );
         if (!cancelled) setData(data);
@@ -97,8 +102,10 @@ export default function HistoryDetailPage() {
 
   if (!data) return null;
 
-  const color = diseaseColorClasses(data.disease_name as DiseaseName);
-  const score = data.fuzzy_score;
+  const color = severityColorClasses(data.severity_level as SeverityLevel);
+  const meta = SEVERITY_META[data.severity_level as SeverityLevel];
+  const fuzzy = data.fuzzy_score;
+  const severity = data.severity_score ?? 0;
 
   return (
     <div className="max-w-5xl mx-auto px-5 md:px-10 py-10 md:py-16">
@@ -128,10 +135,13 @@ export default function HistoryDetailPage() {
         <LogoPill text="Detail Prediksi" />
       </div>
       <h1 className="h1-heading font-bold text-text-heading mb-2 text-center">
-        {data.disease_name}
+        {data.severity_level}
       </h1>
       <p className="sm-default text-text-placeholder text-center mb-10">
-        {formatDate(data.created_at)}
+        {formatDate(data.created_at)} • Status:{" "}
+        <span className="sm-semibold text-text-heading">
+          {data.plant_status}
+        </span>
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -140,7 +150,7 @@ export default function HistoryDetailPage() {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={data.image_url}
-              alt={data.disease_name}
+              alt={data.severity_level}
               className="w-full h-full object-contain"
             />
           ) : (
@@ -151,44 +161,109 @@ export default function HistoryDetailPage() {
         </div>
 
         <div className="space-y-4">
+          {/* Skor Fuzzy */}
           <div className="border-2 border-border-default rounded-2xl p-5">
-            <p className="xs-semibold text-text-placeholder uppercase tracking-wider mb-3">
-              Skor Fuzzy
-            </p>
-            <div className="flex items-end justify-between mb-3">
-              <p className="text-[40px] md:text-[48px] leading-none font-bold text-text-action">
-                {score.toFixed(2)}
+            <div className="flex items-center justify-between mb-3">
+              <p className="xs-semibold text-text-placeholder uppercase tracking-wider">
+                Skor Fuzzy
               </p>
               <span
                 className={`px-3 py-1.5 rounded-full xs-semibold ${color.pill}`}
               >
-                {data.severity_level || "Tanpa gejala"}
+                {data.severity_level}
               </span>
+            </div>
+            <div className="flex items-end justify-between mb-3">
+              <p className="text-[40px] md:text-[48px] leading-none font-bold text-text-action">
+                {fuzzy.toFixed(2)}
+              </p>
             </div>
             <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
               <div
                 className={`h-full ${color.bar}`}
-                style={{ width: `${Math.max(0, Math.min(100, score))}%` }}
+                style={{ width: `${Math.max(0, Math.min(100, fuzzy))}%` }}
               />
             </div>
-            <p className="sm-default text-text-placeholder mt-3">
-              Status:{" "}
-              <span className="sm-semibold text-text-heading">
-                {data.plant_status || "—"}
-              </span>
-            </p>
           </div>
 
+          {/* Severity Score */}
+          <div className="border-2 border-border-default rounded-2xl p-5">
+            <p className="xs-semibold text-text-placeholder uppercase tracking-wider mb-3">
+              Severity Score
+            </p>
+            <div className="flex items-end justify-between mb-3">
+              <p className="text-[32px] md:text-[40px] leading-none font-bold text-text-label">
+                {severity.toFixed(2)}
+              </p>
+            </div>
+            <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-tomato-default"
+                style={{
+                  width: `${Math.max(0, Math.min(100, severity))}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Rekomendasi */}
+          {meta && (
+            <div
+              className={`rounded-2xl p-5 border-2 ${color.bg} ${color.border}`}
+            >
+              <p className="xs-semibold uppercase tracking-wider text-text-placeholder mb-2">
+                Deskripsi & Rekomendasi
+              </p>
+              <p className={`sm-default ${color.text} mb-2`}>
+                {meta.description}
+              </p>
+              <p className={`sm-semibold ${color.text}`}>
+                {meta.recommendation}
+              </p>
+            </div>
+          )}
+
+          {/* Fitur Visual (7 fitur V2) */}
           <div className="border-2 border-border-default rounded-2xl p-5">
             <p className="xs-semibold text-text-placeholder uppercase tracking-wider mb-4">
               Fitur Visual
             </p>
             <div className="space-y-3">
-              <FeatureRow label="Spot Area" value={data.spot_area} />
-              <FeatureRow label="Yellow Ratio" value={data.yellow_ratio} />
-              <FeatureRow label="Brown Ratio" value={data.brown_ratio} />
-              <FeatureRow label="Dark Ratio" value={data.dark_ratio} />
-              <FeatureRow label="Color Change" value={data.color_change} />
+              <FeatureRow
+                label="Spot Area"
+                value={data.spot_area}
+                format="percent"
+              />
+              <FeatureRow
+                label="Color Change"
+                value={data.color_change}
+                format="percent"
+              />
+              <FeatureRow
+                label="Yellow Ratio"
+                value={data.yellow_ratio}
+                format="percent"
+              />
+              <FeatureRow
+                label="Brown Ratio"
+                value={data.brown_ratio}
+                format="percent"
+              />
+              <FeatureRow
+                label="Dark Ratio"
+                value={data.dark_ratio ?? 0}
+                format="percent"
+              />
+              <FeatureRow
+                label="Spot Count"
+                value={data.spot_count ?? 0}
+                format="count"
+              />
+              <FeatureRow
+                label="Texture Var"
+                value={data.texture_var ?? 0}
+                format="number"
+              />
             </div>
           </div>
 
@@ -204,18 +279,39 @@ export default function HistoryDetailPage() {
   );
 }
 
-function FeatureRow({ label, value }: { label: string; value: number }) {
+type RowFormat = "percent" | "count" | "number";
+
+function FeatureRow({
+  label,
+  value,
+  format,
+}: {
+  label: string;
+  value: number;
+  format: RowFormat;
+}) {
+  let display: string;
+  if (format === "percent") display = formatPercent(value);
+  else if (format === "count") display = formatNumber(value, 0);
+  else display = formatNumber(value, 2);
+
+  // Untuk count/number, gunakan representasi 0-100% (clamp) hanya sebagai visual bar
+  // Spot count bisa ratusan, jadi batasi visualisasinya.
+  const barWidth = format === "count"
+    ? Math.max(0, Math.min(100, (value / 100) * 100))
+    : Math.max(0, Math.min(100, value));
+
   return (
     <div className="flex items-center gap-3">
       <span className="sm-default text-text-label w-32 shrink-0">{label}</span>
       <div className="flex-1 h-2 bg-neutral-100 rounded-full overflow-hidden">
         <div
           className="h-full bg-surface-primary rounded-full"
-          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+          style={{ width: `${barWidth}%` }}
         />
       </div>
-      <span className="sm-semibold text-text-heading w-16 text-right">
-        {formatPercent(value)}
+      <span className="sm-semibold text-text-heading w-20 text-right">
+        {display}
       </span>
     </div>
   );

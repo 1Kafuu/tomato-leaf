@@ -1,20 +1,20 @@
 import Link from "next/link";
-import type { PredictionHistoryItem, DiseaseName } from "@/app/types";
-import { diseaseColorClasses, formatDate } from "@/app/lib/utils";
+import type { PredictionHistoryItem, SeverityLevel } from "@/app/types";
+import { severityColorClasses, formatDate } from "@/app/lib/utils";
 
 export default function HistoryItem({ item }: { item: PredictionHistoryItem }) {
-  const color = diseaseColorClasses(item.disease_name as DiseaseName);
+  const color = severityColorClasses(item.severity_level as SeverityLevel);
   return (
     <Link
       href={`/history/${item.id}`}
-      className="grid grid-cols-[64px_1fr_auto] md:grid-cols-[80px_1fr_140px_180px_180px_24px] gap-3 md:gap-4 items-center p-3 md:p-4 border-2 border-border-default rounded-2xl bg-neutral-white hover:border-border-action transition-colors"
+      className="grid grid-cols-[64px_1fr_auto] md:grid-cols-[80px_1fr_140px_140px_180px_24px] gap-3 md:gap-4 items-center p-3 md:p-4 border-2 border-border-default rounded-2xl bg-neutral-white hover:border-border-action transition-colors"
     >
       <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border border-border-default bg-surface-default shrink-0">
         {item.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={item.image_url}
-            alt={item.disease_name}
+            alt={item.severity_level}
             className="w-full h-full object-cover"
             loading="lazy"
             onError={(e) => {
@@ -41,7 +41,7 @@ export default function HistoryItem({ item }: { item: PredictionHistoryItem }) {
         <span
           className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${color.pill} mb-1`}
         >
-          {item.disease_name}
+          {item.severity_level}
         </span>
         <p className="sm-default text-text-placeholder md:hidden">
           {formatDate(item.created_at)}
@@ -49,7 +49,7 @@ export default function HistoryItem({ item }: { item: PredictionHistoryItem }) {
       </div>
 
       <p className="hidden md:block md-default text-text-label">
-        {item.severity_level || "—"}
+        {item.plant_status || "—"}
       </p>
 
       <div className="hidden md:flex items-center gap-2">
