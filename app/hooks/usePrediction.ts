@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { api, getApiError } from "@/app/lib/api";
+import { api, apiV2, getApiError } from "@/app/lib/api";
 import { validateImageFile } from "@/app/lib/utils";
 import type {
   PredictionData,
   PredictionHistoryItem,
-  PredictionResponse,
 } from "@/app/types";
 
 export function usePrediction() {
@@ -51,10 +50,39 @@ export function usePrediction() {
     try {
       const formData = new FormData();
       formData.append("image", file);
-      const { data } = await api.post<PredictionResponse>("/predict", formData, {
+      // V2: flat response { id, image_url, plant_status, severity_level, fuzzy_score, severity_score, features, created_at }
+      const { data } = await apiV2.post<{
+        id: string;
+        success?: boolean;
+        message?: string;
+        image_url?: string;
+        plant_status: string;
+        severity_level: string;
+        fuzzy_score: number;
+        severity_score: number;
+        features: {
+          spot_area: number;
+          color_change: number;
+          yellow_ratio: number;
+          brown_ratio: number;
+          dark_ratio: number;
+          spot_count: number;
+          texture_var: number;
+        };
+        created_at?: string;
+      }>("/predict", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setResult(data.data);
+      setResult({
+        id: data.id,
+        plant_status: data.plant_status,
+        severity_level: data.severity_level,
+        fuzzy_score: data.fuzzy_score,
+        severity_score: data.severity_score,
+        image_url: data.image_url,
+        created_at: data.created_at,
+        features: data.features,
+      });
     } catch (err) {
       const e = getApiError(err);
       setError(e.detail || "Gagal memproses gambar");

@@ -1,5 +1,9 @@
-import type { DiseaseName, DiseaseColor } from "@/app/types";
-import { DISEASE_META } from "@/app/types";
+import type {
+  SeverityLevel,
+  SeverityColor,
+  SeverityMeta,
+} from "@/app/types";
+import { SEVERITY_META } from "@/app/types";
 
 export function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -17,7 +21,11 @@ export function formatPercent(n: number): string {
   return `${n.toFixed(2)}%`;
 }
 
-export type DiseaseColorClasses = {
+export function formatNumber(n: number, digits = 2): string {
+  return n.toFixed(digits);
+}
+
+export type SeverityColorClasses = {
   bg: string;
   text: string;
   border: string;
@@ -25,9 +33,13 @@ export type DiseaseColorClasses = {
   bar: string;
 };
 
-export function diseaseColorClasses(name: DiseaseName | string): DiseaseColorClasses {
-  const meta = DISEASE_META[name as DiseaseName];
-  const color: DiseaseColor = meta?.color ?? "tomato";
+export function severityColorClasses(
+  level: SeverityLevel | string
+): SeverityColorClasses {
+  const meta: SeverityMeta | undefined = SEVERITY_META[
+    level as SeverityLevel
+  ];
+  const color: SeverityColor = meta?.color ?? "tomato";
   switch (color) {
     case "green":
       return {
@@ -36,6 +48,14 @@ export function diseaseColorClasses(name: DiseaseName | string): DiseaseColorCla
         border: "border-surface-primary",
         pill: "bg-surface-primary-light text-text-action border border-border-action",
         bar: "bg-surface-primary",
+      };
+    case "lime":
+      return {
+        bg: "bg-lime-50",
+        text: "text-lime-700",
+        border: "border-lime-500",
+        pill: "bg-lime-50 text-lime-700 border border-lime-500",
+        bar: "bg-lime-500",
       };
     case "yellow":
       return {

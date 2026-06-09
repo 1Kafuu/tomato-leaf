@@ -12,47 +12,54 @@ export interface AuthToken {
   user: User;
 }
 
-// Prediction
+// Prediction (V2 - flat response, 7 features)
 export interface PredictionFeatures {
   spot_area: number;
+  color_change: number;
   yellow_ratio: number;
   brown_ratio: number;
   dark_ratio: number;
-  color_change: number;
+  spot_count: number;
+  texture_var: number;
 }
 
 export interface PredictionData {
-  disease_name: string;
+  id: string;
+  plant_status: "Sehat" | "Terinfeksi" | string;
+  severity_level:
+    | "Sehat"
+    | "Ringan"
+    | "Sedang"
+    | "Berat"
+    | "Sangat Berat"
+    | string;
   fuzzy_score: number;
-  severity_level: string;
-  plant_status: string;
+  severity_score: number;
   features: PredictionFeatures;
+  image_url?: string;
+  created_at?: string;
 }
 
-export interface PredictionResponse {
-  success: boolean;
-  message: string;
-  data: PredictionData;
-}
-
-// History list item (tanpa features)
+// History list item (tanpa features, dari V1 endpoint)
 export interface PredictionHistoryItem {
   id: string;
   image_url: string;
-  disease_name: string;
-  fuzzy_score: number;
+  plant_status: string;
   severity_level: string;
+  fuzzy_score: number;
+  severity_score: number;
   created_at: string;
 }
 
 // History detail (dengan features)
 export interface PredictionHistoryDetail extends PredictionHistoryItem {
   spot_area: number;
+  color_change: number;
   yellow_ratio: number;
   brown_ratio: number;
   dark_ratio: number;
-  color_change: number;
-  plant_status?: string;
+  spot_count: number;
+  texture_var: number;
 }
 
 // API error
@@ -61,60 +68,74 @@ export interface ApiError {
   status: number;
 }
 
-// Disease metadata
-export type DiseaseName =
-  | "Sangat Sehat"
+// Severity metadata (V2 - severity-based, bukan nama penyakit)
+export type SeverityLevel =
   | "Sehat"
-  | "Early Blight"
-  | "Late Blight"
-  | "Leaf Mold"
-  | "Septoria Leaf Spot"
-  | "Sangat Buruk";
+  | "Ringan"
+  | "Sedang"
+  | "Berat"
+  | "Sangat Berat";
 
-export type DiseaseColor = "green" | "yellow" | "tomato" | "red";
+export type SeverityColor = "green" | "lime" | "yellow" | "tomato" | "red";
 
-export interface DiseaseMeta {
-  name: DiseaseName;
+export interface SeverityMeta {
+  level: SeverityLevel;
   minScore: number;
   maxScore: number;
-  color: DiseaseColor;
+  color: SeverityColor;
   description: string;
+  recommendation: string;
 }
 
-export const DISEASE_META: Record<DiseaseName, DiseaseMeta> = {
-  "Sangat Sehat": {
-    name: "Sangat Sehat",
-    minScore: 90, maxScore: 100, color: "green",
-    description: "Daun dalam kondisi optimal, hijau segar, tanpa gejala penyakit.",
+export const SEVERITY_META: Record<SeverityLevel, SeverityMeta> = {
+  Sehat: {
+    level: "Sehat",
+    minScore: 85,
+    maxScore: 100,
+    color: "green",
+    description:
+      "Daun dalam kondisi optimal, hijau segar, tanpa gejala penyakit.",
+    recommendation:
+      "Pertahankan perawatan rutin. Lanjutkan jadwal penyiraman dan pemupukan.",
   },
-  "Sehat": {
-    name: "Sehat",
-    minScore: 75, maxScore: 89, color: "green",
-    description: "Daun sehat dengan sedikit variasi warna normal.",
+  Ringan: {
+    level: "Ringan",
+    minScore: 70,
+    maxScore: 84,
+    color: "lime",
+    description:
+      "Gejala penyakit tingkat ringan terdeteksi pada sebagian kecil daun.",
+    recommendation:
+      "Pantau perkembangan 2-3 hari. Isolasi daun yang terinfeksi dan kurangi kelembapan berlebih.",
   },
-  "Early Blight": {
-    name: "Early Blight",
-    minScore: 60, maxScore: 74, color: "yellow",
-    description: "Bercak kecil coklat pada daun bawah, tahap awal infeksi jamur Alternaria.",
+  Sedang: {
+    level: "Sedang",
+    minScore: 50,
+    maxScore: 69,
+    color: "yellow",
+    description:
+      "Infeksi tingkat sedang. Perubahan warna dan bercak mulai meluas.",
+    recommendation:
+      "Aplikasikan fungisida nabati. Pangkas daun yang terinfeksi dan perbaiki sirkulasi udara.",
   },
-  "Late Blight": {
-    name: "Late Blight",
-    minScore: 45, maxScore: 59, color: "yellow",
-    description: "Bercak tidak beraturan dengan tepi daun mengering, infeksi Phytophthora.",
+  Berat: {
+    level: "Berat",
+    minScore: 25,
+    maxScore: 49,
+    color: "tomato",
+    description:
+      "Infeksi berat. Kerusakan daun signifikan dengan banyak bercak nekrosis.",
+    recommendation:
+      "Gunakan fungisida kimia sesuai dosis. Buang daun rusak parah dan karantina tanaman.",
   },
-  "Leaf Mold": {
-    name: "Leaf Mold",
-    minScore: 25, maxScore: 44, color: "tomato",
-    description: "Perubahan warna kuning masif dengan bercak halus pada permukaan daun.",
-  },
-  "Septoria Leaf Spot": {
-    name: "Septoria Leaf Spot",
-    minScore: 10, maxScore: 24, color: "tomato",
-    description: "Bercak bulat kecil dengan tepi gelap dan pusat keabuan.",
-  },
-  "Sangat Buruk": {
-    name: "Sangat Buruk",
-    minScore: 0, maxScore: 9, color: "red",
-    description: "Kerusakan daun sangat parah, hampir tidak ada jaringan sehat tersisa.",
+  "Sangat Berat": {
+    level: "Sangat Berat",
+    minScore: 0,
+    maxScore: 24,
+    color: "red",
+    description:
+      "Kerusakan sangat parah, sebagian besar jaringan daun rusak atau mati.",
+    recommendation:
+      "Konsultasi dengan ahli pertanian. Pertimbangkan pencabutan tanaman untuk mencegah penyebaran.",
   },
 };
