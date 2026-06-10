@@ -137,24 +137,21 @@ Berikut adalah fitur yang tidak termasuk dalam cakupan MVP dan tidak akan dikemb
 # System Architecture
 
 ```
-+-------------------+         +--------------------+         +-----------------+
-|                   |  HTTP   |                    |  SQL    |                 |
-|   Next.js App     +-------->+   FastAPI Server   +-------->+   PostgreSQL    |
-|   (Frontend)      |<--------+   (Backend API)    |<--------+   (Database)    |
-|                   |  JSON   |                    |  Rows   |                 |
-+-------------------+         +--------------------+         +-----------------+
++-------------------+       +---------------------+       +--------------------+
+|                   | HTTP  |                     |  SQL  |                    |
+|   Next.js App     +------>+   FastAPI Server    +------>+   PostgreSQL       |
+|   (Frontend)      |<------+   (Backend API)     |<------+   (Database)       |
+|                   | JSON  |                     | Rows  |                    |
++-------------------+       +---------------------+       +--------------------+
          |                            |
-         | Axios POST /predict        | OpenCV + NumPy
-         | (FormData: image)          | scikit-fuzzy
-         |                            |
-         v                            v
-  [User Browser]              [Inference Engine]
-                              1. Leaf Segmentation
-                              2. Feature Extraction
-                              3. Fuzzification
-                              4. Rule Evaluation
-                              5. Defuzzification
-                              6. Classification
+         | 1. Upload to Bucket        | app.core.model (AI Model)
+         | 2. POST /predict (URL)     | 1. Download image from URL
+         |                            | 2. Leaf Segmentation
+         v                            | 3. Feature Extraction
+  [Supabase Storage]                   | 4. Fuzzification
+                                       | 5. Rule Evaluation
+                                       | 6. Defuzzification
+                                       | 7. Classification
 ```
 
 ## Arsitektur Layers
@@ -162,9 +159,9 @@ Berikut adalah fitur yang tidak termasuk dalam cakupan MVP dan tidak akan dikemb
 | Layer | Teknologi | Fungsi |
 |---|---|---|
 | Presentation | Next.js + Tailwind CSS | UI/UX pengguna |
+| Storage | Supabase Storage Bucket | Menyimpan gambar yang diupload |
 | API Gateway | FastAPI Python | REST endpoint, validasi request |
-| Processing | OpenCV + NumPy | Segmentasi daun, ekstraksi fitur |
-| Inference | scikit-fuzzy | Fuzzifikasi, evaluasi rule, defuzzifikasi |
+| AI Model | OpenCV + NumPy + custom fuzzy | Segmentasi, ekstraksi fitur, inferensi fuzzy |
 | Persistence | PostgreSQL | Menyimpan user, history prediksi |
 | Deployment Frontend | Vercel | Hosting Next.js |
 | Deployment Backend | Railway / Render | Hosting FastAPI |
@@ -173,18 +170,24 @@ Berikut adalah fitur yang tidak termasuk dalam cakupan MVP dan tidak akan dikemb
 ## Alur Data End-to-End
 
 ```
-Browser           Frontend           Backend              Database
-   |                  |                  |                     |
-   |-- Upload Image ->|                  |                     |
-   |                  |-- POST /predict -|->                   |
-   |                  |   (FormData)     |                     |
-   |                  |                  |-- Segmentasi Daun --|
-   |                  |                  |-- Ekstraksi Fitur --|
-   |                  |                  |-- Inferensi Fuzzy --|
-   |                  |                  |-- Simpan History -->|
-   |                  |<- JSON Response -|                     |
-   |<- Tampilkan -----|                  |                     |
-   |   Hasil          |                  |                     |
+Browser           Frontend            Backend             Storage Bucket      Database
+   |                  |                   |                     |                  |
+   |-- Upload Image ->|                   |                     |                  |
+   |                  |-- Upload to ------>|                    |                  |
+   |                  |   Storage Bucket   |                     |                  |
+   |                  |<-- Return URL -----|                    |                  |
+   |                  |                   |                     |                  |
+   |                  |-- POST /predict  -|->                   |                  |
+   |                  |   { image_url }   |                     |                  |
+   |                  |                   |-- Download image ---|->                |
+   |                  |                   |   from URL          |                  |
+   |                  |                   |-- Segmentasi Daun --|                  |
+   |                  |                   |-- Ekstraksi Fitur --|                  |
+   |                  |                   |-- Inferensi Fuzzy --|                  |
+   |                  |                   |-- Simpan History ---|----------------->|
+   |                  |<- JSON Response --|                     |                  |
+   |<- Tampilkan -----|                   |                     |                  |
+   |   Hasil          |                   |                     |                  |
 ```
 
 ---
@@ -749,10 +752,12 @@ Output numerik hasil defuzzifikasi (z) diklasifikasikan ke dalam kategori penyak
 
 | Field | Tipe | Contoh |
 |---|---|---|
-| disease_name | string | "Late Blight" |
-| fuzzy_score | float | 56,00 |
-| severity_level | string | "Sedang" |
+| disease_name | string | "Early Blight" |
+| fuzzy_score | float | 71,25 |
+| severity_level | string | "Ringan" |
 | plant_status | string | "Terinfeksi" |
+| spot_area | float | 12,34 |
+| color_change | float | 30,50 |
 
 ## Format Response API
 
@@ -821,11 +826,14 @@ Output numerik hasil defuzzifikasi (z) diklasifikasikan ke dalam kategori penyak
 ### Step 4: Submit prediksi
 
 - User menekan tombol "Deteksi"
-- Sistem mengirim gambar ke backend via AJAX (FormData)
+- Frontend mengupload gambar ke **Supabase Storage Bucket** dan mendapatkan URL
+- Frontend mengirim URL gambar ke backend via `POST /predict` dengan body `{ "image_url": "..." }`
 
 ### Step 5: Proses backend
 
-- Sistem melakukan segmentasi daun → ekstraksi fitur → inferensi fuzzy → klasifikasi
+- Backend menerima `image_url`, meneruskannya ke AI Model (`app.core.model`)
+- AI Model mengunduh gambar dari URL → segmentasi daun → ekstraksi fitur → inferensi fuzzy → klasifikasi
+- Hasil disimpan ke database
 - Durasi maksimal 5 detik
 
 ### Step 6: Tampilkan hasil
@@ -871,10 +879,10 @@ Output numerik hasil defuzzifikasi (z) diklasifikasikan ke dalam kategori penyak
 | ID | FR-03 |
 |---|---|
 | Judul | Upload Gambar Daun Tomat |
-| Deskripsi | Pengguna dapat mengunggah gambar daun tomat untuk diprediksi |
+| Deskripsi | Pengguna dapat mengunggah gambar daun tomat untuk diprediksi. Gambar disimpan ke Supabase Storage Bucket, URL-nya dikirim ke backend. |
 | Prioritas | P0 |
 | Input | File gambar (JPG, JPEG, PNG), maksimal 10 MB |
-| Output | Preview gambar, status validasi |
+| Output | Preview gambar, status validasi, URL tersimpan di Storage Bucket |
 | Validasi | Format file (JPG/JPEG/PNG), ukuran ≤ 10 MB |
 
 ## FR-04: Segmentasi Daun
@@ -1015,13 +1023,10 @@ Output numerik hasil defuzzifikasi (z) diklasifikasikan ke dalam kategori penyak
 | id (PK)        |<-------->| id (PK)           |
 | email          |    1    N| user_id (FK)      |
 | password_hash  |          | image_name        |
-| full_name      |          | image_data (bytea)|
+| full_name      |          | image_url         |
 | created_at     |          | spot_area         |
 | updated_at     |          | color_change      |
-+----------------+          | yellow_ratio      |
-                            | brown_ratio       |
-                            | dark_ratio        |
-                            | fuzzy_score       |
++----------------+          | fuzzy_score       |
                             | disease_name      |
                             | severity_level    |
                             | created_at        |
@@ -1046,12 +1051,9 @@ Output numerik hasil defuzzifikasi (z) diklasifikasikan ke dalam kategori penyak
 | id | UUID | PK, DEFAULT gen_random_uuid() | Primary key |
 | user_id | UUID | FK → users.id, NOT NULL | ID pengguna |
 | image_name | VARCHAR(255) | NOT NULL | Nama file asli |
-| image_data | BYTEA | NOT NULL | Data gambar (binary) |
+| image_url | VARCHAR(512) | NOT NULL | URL gambar di Storage Bucket |
 | spot_area | DECIMAL(5,2) | NOT NULL | Spot area (%) |
-| yellow_ratio | DECIMAL(5,2) | NOT NULL | Yellow ratio (%) |
-| brown_ratio | DECIMAL(5,2) | NOT NULL | Brown ratio (%) |
-| dark_ratio | DECIMAL(5,2) | NOT NULL | Dark ratio (%) |
-| color_change | DECIMAL(5,2) | NOT NULL | Color change (%) |
+| color_change | DECIMAL(5,2) | NOT NULL | Color change severity (%) |
 | fuzzy_score | DECIMAL(5,2) | NOT NULL | Skor fuzzy Sugeno |
 | disease_name | VARCHAR(50) | NOT NULL | Nama penyakit hasil diagnosis |
 | severity_level | VARCHAR(20) | NOT NULL | Tingkat keparahan |
@@ -1078,13 +1080,13 @@ Production  : https://api.domain.com/api/v1
 
 ## Endpoint: POST /predict
 
-Melakukan prediksi penyakit daun tomat dari gambar yang diunggah.
+Melakukan prediksi penyakit daun tomat dari URL gambar yang sudah tersimpan di Supabase Storage Bucket.
 
 ### Request
 
 | Parameter | Tipe | Wajib | Deskripsi |
 |---|---|---|---|
-| image | File (multipart/form-data) | Ya | File gambar daun tomat (JPG/JPEG/PNG) |
+| image_url | string | Ya | URL gambar daun tomat yang sudah tersimpan di Storage Bucket |
 
 ### Response (Success — 200)
 
@@ -1097,13 +1099,8 @@ Melakukan prediksi penyakit daun tomat dari gambar yang diunggah.
     "fuzzy_score": 71.25,
     "severity_level": "Ringan",
     "plant_status": "Terinfeksi",
-    "features": {
-      "spot_area": 12.34,
-      "color_change": 30.50,
-      "yellow_ratio": 15.20,
-      "brown_ratio": 2.80,
-      "dark_ratio": 12.50
-    }
+    "spot_area": 12.34,
+    "color_change": 30.50
   }
 }
 ```
@@ -1143,7 +1140,7 @@ Melakukan prediksi penyakit daun tomat dari gambar yang diunggah.
 | Header | Nilai | Deskripsi |
 |---|---|---|
 | Authorization | Bearer {token} | Token JWT autentikasi |
-| Content-Type | multipart/form-data | Tipe konten upload file |
+| Content-Type | application/json | Tipe konten request body |
 
 ## Endpoint: GET /history
 
@@ -1193,12 +1190,9 @@ Mengambil detail riwayat prediksi berdasarkan ID.
   "data": {
     "id": "uuid",
     "image_name": "daun_tomat.jpg",
-    "image_url": "https://api.domain.com/images/uuid.jpg",
+    "image_url": "https://supabase.storage/uuid.jpg",
     "spot_area": 12.34,
     "color_change": 30.50,
-    "yellow_ratio": 15.20,
-    "brown_ratio": 2.80,
-    "dark_ratio": 12.50,
     "fuzzy_score": 71.25,
     "disease_name": "Early Blight",
     "severity_level": "Ringan",

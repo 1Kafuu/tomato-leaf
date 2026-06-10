@@ -1,1 +1,27 @@
-# TODO: Add dependencies (fastapi, uvicorn, sqlalchemy, asyncpg, supabase-py, opencv-python, numpy, scikit-fuzzy, python-multipart, pillow)
+# Web Framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Data Validation & Settings
+pydantic[email]
+pydantic-settings
+
+# Database
+sqlalchemy[asyncio]
+asyncpg
+
+# Auth
+python-jose[cryptography]
+passlib[bcrypt]
+
+# Supabase
+supabase
+
+# Image Processing
+opencv-python-headless
+numpy
+Pillow
+
+# Fuzzy Inference System
+scikit-fuzzy
