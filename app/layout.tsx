@@ -20,6 +20,29 @@ export const metadata: Metadata = {
   icons: {
     icon: icon.src,
   },
+  openGraph: {
+    title: "TomaCheck - Deteksi Penyakit Daun Tomat",
+    description:
+      "Aplikasi berbasis web untuk mendeteksi kesehatan daun tomat melalui analisis citra digital menggunakan metode Fuzzy Sugeno Orde 0.",
+    url: "https://whiny-botanist-fax.ngrok-free.dev",
+    siteName: "TomaCheck",
+    images: [
+      {
+        url: "/images/og-thumbnail.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TomaCheck - Deteksi Penyakit Daun Tomat",
+    description:
+      "Aplikasi berbasis web untuk mendeteksi kesehatan daun tomat melalui analisis citra digital menggunakan metode Fuzzy Sugeno Orde 0.",
+    images: ["/images/og-thumbnail.png"],
+  },
 };
 
 export default function RootLayout({

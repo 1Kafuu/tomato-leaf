@@ -3,7 +3,7 @@ const marqueeItems = [
   "Akurasi Tinggi",
   "Mudah Digunakan",
   "Fuzzy Sugeno",
-  "5 Penyakit Terdeteksi",
+  "Penyakit Terdeteksi",
   "Tanpa Instalasi",
   "Akses 24/7",
   "Mobile Friendly",

@@ -43,7 +43,7 @@ export default function PageHeading() {
                   <p className="xs-semibold text-text-placeholder uppercase tracking-wider mb-1">
                     Hasil Diagnosis
                   </p>
-                  <h1 className="md-semibold text-text-heading">Early Blight</h1>
+                  <h1 className="md-semibold text-text-heading">Terinfeksi</h1>
                 </div>
               </div>
 
@@ -51,20 +51,20 @@ export default function PageHeading() {
                 <div className="flex justify-between items-end mb-4">
                   <div>
                     <p className="xs-default text-text-placeholder mb-1">
-                      Skor Fuzzy
+                      Skor Keparahan
                     </p>
                     <h1 className="text-[40px] leading-none font-bold text-text-action">
-                      71.25
+                      50.76
                     </h1>
                   </div>
                   <span className="px-3 py-1.5 rounded-full bg-neutral-100 text-text-label border border-border-default xs-semibold">
-                    Ringan
+                    Sedang
                   </span>
                 </div>
                 <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-surface-primary rounded-full"
-                    style={{ width: "71.25%" }}
+                    style={{ width: "50.76%" }}
                   />
                 </div>
               </div>
@@ -72,19 +72,19 @@ export default function PageHeading() {
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center py-2">
                   <p className="xs-default text-text-placeholder mb-1">Spot</p>
-                  <p className="sm-semibold text-text-heading">12.3%</p>
+                  <p className="sm-semibold text-text-heading">73.0%</p>
                 </div>
                 <div className="text-center py-2 border-x border-border-default">
                   <p className="xs-default text-text-placeholder mb-1">
                     Kuning
                   </p>
-                  <p className="sm-semibold text-text-heading">15.2%</p>
+                  <p className="sm-semibold text-text-heading">25.2%</p>
                 </div>
                 <div className="text-center py-2">
                   <p className="xs-default text-text-placeholder mb-1">
                     Coklat
                   </p>
-                  <p className="sm-semibold text-text-heading">2.8%</p>
+                  <p className="sm-semibold text-text-heading">0.0%</p>
                 </div>
               </div>
             </div>
