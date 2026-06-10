@@ -1,46 +1,36 @@
 import LogoPill from "./LogoPill";
 
-type Disease = {
+type Status = {
   name: string;
   range: string;
   desc: string;
 };
 
-const diseases: Disease[] = [
-  {
-    name: "Sangat Sehat",
-    range: "90 – 100",
-    desc: "Daun dalam kondisi optimal, hijau segar, tanpa gejala penyakit.",
-  },
+const statuses: Status[] = [
   {
     name: "Sehat",
-    range: "75 – 89",
-    desc: "Daun sehat dengan sedikit variasi warna normal yang dapat diterima.",
+    range: "75 – 100",
+    desc: "Daun dalam kondisi optimal, hijau segar, tanpa gejala penyakit yang berarti.",
   },
   {
-    name: "Early Blight",
+    name: "Terinfeksi Ringan",
     range: "60 – 74",
-    desc: "Bercak kecil coklat pada daun bawah, tahap awal infeksi jamur Alternaria.",
+    desc: "Infeksi tingkat ringan, biasanya berupa bercak awal atau perubahan warna minor.",
   },
   {
-    name: "Late Blight",
+    name: "Terinfeksi Sedang",
     range: "45 – 59",
-    desc: "Bercak tidak beraturan dengan tepi daun mengering, infeksi Phytophthora.",
+    desc: "Infeksi tingkat sedang, bercak dan perubahan warna mulai meluas pada daun.",
   },
   {
-    name: "Leaf Mold",
-    range: "25 – 44",
-    desc: "Perubahan warna kuning masif dengan bercak halus pada permukaan daun.",
+    name: "Terinfeksi Berat",
+    range: "10 – 44",
+    desc: "Infeksi tingkat berat, sebagian besar jaringan daun rusak dan perlu penanganan.",
   },
   {
-    name: "Septoria Leaf Spot",
-    range: "10 – 24",
-    desc: "Bercak bulat kecil dengan tepi gelap dan pusat keabuan.",
-  },
-  {
-    name: "Sangat Buruk",
+    name: "Terinfeksi Sangat Berat",
     range: "0 – 9",
-    desc: "Kerusakan daun sangat parah, hampir tidak ada jaringan sehat tersisa.",
+    desc: "Kerusakan daun sangat parah, jaringan sehat hampir tidak tersisa.",
   },
 ];
 
@@ -49,34 +39,35 @@ export default function DiseaseSection() {
     <div id="penyakit" className="mt-24 md:mt-32 px-5 md:px-10 max-w-7xl mx-auto">
       <div className="flex flex-col gap-6">
         <div className="mx-auto">
-          <LogoPill text="Penyakit yang Terdeteksi" />
+          <LogoPill text="Status Daun Tomat" />
         </div>
         <div className="flex flex-col gap-6 pb-8 border-b border-border-default max-w-3xl mx-auto text-center">
           <h1 className="h1-heading font-bold text-text-heading">
-            Sistem mengenali 5 jenis penyakit utama daun tomat
+            Sistem mengklasifikasikan daun tomat menjadi Sehat dan 4 tingkat
+            infeksi
           </h1>
           <p className="md-default text-text-placeholder leading-relaxed">
-            Dilatih dengan 4.952 sampel dari PlantVillage Dataset dan
-            parameter membership function yang dibangun dengan K-Means
-            clustering.
+            Mulai dari Sehat, Terinfeksi Ringan, Terinfeksi Sedang, Terinfeksi
+            Berat, hingga Terinfeksi Sangat Berat. Didukung oleh analisis citra
+            digital dan metode Fuzzy Sugeno.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-10">
-        {diseases.map((d) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mt-10">
+        {statuses.map((s) => (
           <div
-            key={d.name}
+            key={s.name}
             className="border-2 border-border-default rounded-2xl bg-neutral-white p-5 hover:border-border-action transition-colors"
           >
             <div className="flex items-start justify-between mb-3">
-              <h1 className="md-semibold text-text-heading">{d.name}</h1>
+              <h1 className="md-semibold text-text-heading">{s.name}</h1>
               <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-surface text-text-heading border border-border-default">
-                {d.range}
+                {s.range}
               </span>
             </div>
             <p className="sm-default text-text-placeholder leading-relaxed">
-              {d.desc}
+              {s.desc}
             </p>
           </div>
         ))}

@@ -10,6 +10,16 @@ from app.api.v2.router import api_router as api_router_v2
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # ===== ENV checks (fail-fast hints untuk config yang sering lupa) =====
+    from app.core.config import settings
+    if not settings.SUPABASE_URL:
+        print("⚠️  SUPABASE_URL is empty. Image upload & auth will be disabled.")
+    if settings.SUPABASE_URL and not settings.SUPABASE_SERVICE_ROLE_KEY:
+        print(
+            "⚠️  SUPABASE_SERVICE_ROLE_KEY is not set. Storage uploads akan gagal (RLS 403).\n"
+            "   Set SUPABASE_SERVICE_ROLE_KEY di backend/.env (Supabase Dashboard > Settings > API)."
+        )
+
     # Initialize database tables on startup
     if engine is not None:
         try:

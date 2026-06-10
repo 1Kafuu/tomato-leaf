@@ -19,9 +19,9 @@ export default function FAQSection() {
         "Waktu respons target kami adalah kurang dari 5 detik dari saat gambar diunggah hingga hasil diagnosis ditampilkan. Proses mencakup segmentasi daun, ekstraksi fitur, dan inferensi Fuzzy Sugeno.",
     },
     {
-      title: "Bagaimana cara interpretasi skor fuzzy?",
+      title: "Bagaimana cara interpretasi hasil diagnosis?",
       content:
-        "Skor fuzzy berkisar 0-100 dan diklasifikasikan menjadi 7 kategori: Sangat Sehat (90-100), Sehat (75-89), Early Blight Ringan (60-74), Late Blight (45-59), Leaf Mold (25-44), Septoria Leaf Spot (10-24), dan Sangat Buruk (0-9).",
+        "Setiap hasil diagnosis memuat status daun (Sehat atau Terinfeksi) dan tingkat keparahan (Ringan, Sedang, Berat, atau Sangat Berat). Sistem menampilkan skor keparahan 0-100: Sehat (75-100), Terinfeksi Ringan (60-74), Terinfeksi Sedang (45-59), Terinfeksi Berat (10-44), dan Terinfeksi Sangat Berat (0-9).",
     },
     {
       title: "Apakah data saya aman?",
