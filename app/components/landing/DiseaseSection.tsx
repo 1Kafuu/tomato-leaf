@@ -9,27 +9,27 @@ type Status = {
 const statuses: Status[] = [
   {
     name: "Sehat",
-    range: "75 – 100",
+    range: "85 – 100",
     desc: "Daun dalam kondisi optimal, hijau segar, tanpa gejala penyakit yang berarti.",
   },
   {
     name: "Terinfeksi Ringan",
-    range: "60 – 74",
+    range: "70 – 84",
     desc: "Infeksi tingkat ringan, biasanya berupa bercak awal atau perubahan warna minor.",
   },
   {
     name: "Terinfeksi Sedang",
-    range: "45 – 59",
+    range: "50 – 69",
     desc: "Infeksi tingkat sedang, bercak dan perubahan warna mulai meluas pada daun.",
   },
   {
     name: "Terinfeksi Berat",
-    range: "10 – 44",
+    range: "25 – 49",
     desc: "Infeksi tingkat berat, sebagian besar jaringan daun rusak dan perlu penanganan.",
   },
   {
     name: "Terinfeksi Sangat Berat",
-    range: "0 – 9",
+    range: "0 – 24",
     desc: "Kerusakan daun sangat parah, jaringan sehat hampir tidak tersisa.",
   },
 ];

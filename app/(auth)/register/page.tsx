@@ -150,6 +150,7 @@ export default function RegisterPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Nama lengkap Anda"
+                  suppressHydrationWarning
                   className="w-full h-12 md:h-14 pl-12 pr-4 rounded-2xl border-2 border-border-default bg-neutral-white text-md-default text-text-heading placeholder:text-text-placeholder focus:outline-none focus:border-border-action transition-colors"
                 />
               </div>
@@ -185,6 +186,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@email.com"
+                  suppressHydrationWarning
                   className="w-full h-12 md:h-14 pl-12 pr-4 rounded-2xl border-2 border-border-default bg-neutral-white text-md-default text-text-heading placeholder:text-text-placeholder focus:outline-none focus:border-border-action transition-colors"
                 />
               </div>
@@ -220,11 +222,13 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimal 8 karakter"
+                  suppressHydrationWarning
                   className="w-full h-12 md:h-14 pl-12 pr-12 rounded-2xl border-2 border-border-default bg-neutral-white text-md-default text-text-heading placeholder:text-text-placeholder focus:outline-none focus:border-border-action transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  suppressHydrationWarning
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-icon-default hover:text-text-action transition-colors"
                   aria-label={
                     showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
@@ -325,6 +329,7 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Ulangi kata sandi"
+                  suppressHydrationWarning
                   className="w-full h-12 md:h-14 pl-12 pr-12 rounded-2xl border-2 border-border-default bg-neutral-white text-md-default text-text-heading placeholder:text-text-placeholder focus:outline-none focus:border-border-action transition-colors"
                 />
                 {confirmPassword && password === confirmPassword && (

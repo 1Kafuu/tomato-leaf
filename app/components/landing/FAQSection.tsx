@@ -21,7 +21,7 @@ export default function FAQSection() {
     {
       title: "Bagaimana cara interpretasi hasil diagnosis?",
       content:
-        "Setiap hasil diagnosis memuat status daun (Sehat atau Terinfeksi) dan tingkat keparahan (Ringan, Sedang, Berat, atau Sangat Berat). Sistem menampilkan skor keparahan 0-100: Sehat (75-100), Terinfeksi Ringan (60-74), Terinfeksi Sedang (45-59), Terinfeksi Berat (10-44), dan Terinfeksi Sangat Berat (0-9).",
+        "Setiap hasil diagnosis memuat status daun (Sehat atau Terinfeksi) dan tingkat keparahan (Ringan, Sedang, Berat, atau Sangat Berat). Sistem menampilkan skor keparahan 0-100: Sehat (85-100), Terinfeksi Ringan (70-84), Terinfeksi Sedang (50-69), Terinfeksi Berat (25-49), dan Terinfeksi Sangat Berat (0-24).",
     },
     {
       title: "Apakah data saya aman?",

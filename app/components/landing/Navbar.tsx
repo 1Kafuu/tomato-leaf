@@ -40,7 +40,10 @@ export default function Navbar({ variant, user: userProp, onLogout: onLogoutProp
   const isAuthed = variant === "auth";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b-2 border-border-default bg-neutral-white/90 backdrop-blur">
+    <header
+      ref={menuRef}
+      className="sticky top-0 z-50 w-full border-b-2 border-border-default bg-neutral-white/90 backdrop-blur"
+    >
       <div className="max-w-7xl mx-auto px-5 md:px-10 h-16 md:h-20 flex items-center justify-between">
         {/* Logo: TIDAK link ke mana pun setelah login (hanya branding).
             Untuk marketing, logo link ke landing page. */}
@@ -176,10 +179,7 @@ export default function Navbar({ variant, user: userProp, onLogout: onLogoutProp
 
       {/* Mobile menu dropdown */}
       {menuOpen && (
-        <div
-          ref={menuRef}
-          className="md:hidden border-t-2 border-border-default bg-neutral-white"
-        >
+        <div className="md:hidden border-t-2 border-border-default bg-neutral-white">
           <div className="max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1">
             {isAuthed ? (
               <>
