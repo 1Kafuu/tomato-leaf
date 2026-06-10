@@ -15,9 +15,9 @@ Sistem mendeteksi kondisi kesehatan daun tomat dari citra gambar menggunakan **F
 | No | Fitur | Keterangan |
 |---|---|---|
 | 1 | Segmentasi daun | HSV green mask + largest contour |
-| 2 | Ekstraksi fitur | 7 fitur visual |
-| 3 | Fuzzy inference | 16 rules Sugeno Orde 0 |
-| 4 | Severity score | Perhitungan berbobot 6 fitur |
+| 2 | Ekstraksi fitur | 7 fitur visual (semua disimpan ke DB) |
+| 3 | Fuzzy inference | 16 rules Sugeno Orde 0 (2 input utama) |
+| 4 | Severity score | Perhitungan berbobot 6 fitur (tanpa dark_ratio) |
 
 ---
 
@@ -38,8 +38,9 @@ Input Image (JPG/JPEG/PNG)
     │
     ▼ leaf_mask, masked_image
 ┌─────────────────────────────────┐
-│ feature_extractor.py │
-│ Ekstrak 7 fitur dari area daun  │
+│ feature_extractor.py            │
+│ Ekstrak 7 fitur dari area daun   │
+│ (6 digunakan, dark_ratio ekstra)│
 └─────────────────────────────────┘
     │
     ▼ features dict (7 keys)
@@ -113,13 +114,15 @@ Jika tidak ada kontur terdeteksi → gunakan seluruh area gambar sebagai leaf ma
 
 | No | Feature | Unit | Formula | HSV Range |
 |---|---|---|---|---|
-| 1 | spot_area | % | (spot_pixels / leaf_pixels) × 100 | [0, 20, 20] - [40, 255, 180] |
-| 2 | color_change | % | yellow_ratio + brown_ratio + dark_ratio | - |
-| 3 | yellow_ratio | % | (yellow_pixels / leaf_pixels) × 100 | [20, 50, 50] - [35, 255, 255] |
-| 4 | brown_ratio | % | (brown_pixels / leaf_pixels) × 100 | [0, 20, 20] - [20, 255, 120] |
-| 5 | dark_ratio | % | (dark_pixels / leaf_pixels) × 100 | [0, 0, 0] - [180, 255, 60] |
-| 6 | spot_count | count | count(contours with area ≥ 5) | - |
-| 7 | texture_var | - | std(grayscale_pixels) | - |
+| 1 | spot_area | % | (spot_pixels / leaf_pixels) × 100 | [0, 20, 20] - [40, 255, 180] | ✅ Used in severity |
+| 2 | color_change | % | yellow_ratio + brown_ratio + dark_ratio | - | ✅ Used in severity |
+| 3 | yellow_ratio | % | (yellow_pixels / leaf_pixels) × 100 | [20, 50, 50] - [35, 255, 255] | ✅ Used in severity |
+| 4 | brown_ratio | % | (brown_pixels / leaf_pixels) × 100 | [0, 20, 20] - [20, 255, 120] | ✅ Used in severity |
+| 5 | dark_ratio | % | (dark_pixels / leaf_pixels) × 100 | [0, 0, 0] - [180, 255, 60] | ❌ Extra (stored, not used) |
+| 6 | spot_count | count | count(contours with area ≥ 5) | - | ✅ Used in severity |
+| 7 | texture_var | - | std(grayscale_pixels) | - | ✅ Used in severity |
+
+> **Catatan:** `dark_ratio` diekstrak dan disimpan ke database, tapi **tidak digunakan** dalam perhitungan severity score (`FEATURE_WEIGHTS` hanya 6 fitur). Fitur ini disediakan untuk pengembangan lebih lanjut.
 
 ### Feature Statistics (stats_6features.csv)
 
@@ -297,15 +300,18 @@ where:
 
 ### Feature Weights (config.py)
 
-| Feature | Weight |
-|---|---|
-| spot_area | 0.30 |
-| color_change | 0.25 |
-| brown_ratio | 0.15 |
-| yellow_ratio | 0.10 |
-| spot_count | 0.10 |
-| texture_var | 0.10 |
-| **Total** | **1.00** |
+> ⚠️ **Perhatikan:** Hanya **6 fitur** yang digunakan (tanpa `dark_ratio`).
+
+| Feature | Weight | Catatan |
+|---|---|---|
+| spot_area | 0.30 | % area bercak |
+| color_change | 0.25 | yellow + brown + dark |
+| brown_ratio | 0.15 | nekrosis |
+| yellow_ratio | 0.10 | klorosis |
+| spot_count | 0.10 | jumlah bercak |
+| texture_var | 0.10 | variansi tekstur |
+| **Total** | **1.00** | |
+| dark_ratio | — | Diekstrak & disimpan, tapi tidak dipakai di severity |
 
 ### Normalization Ranges - P99 (config.py)
 
@@ -368,18 +374,18 @@ severity_score = Σ(weight_i × normalized_i)
 
 ```python
 {
-    "plant_status": str,    # "Sehat" | "Terinfeksi"
-    "severity_level": str,  # "Sehat" | "Ringan" | "Sedang" | "Berat" | "Sangat Berat"
-    "fuzzy_score": float,   # 0-100 (Sugeno weighted average)
-    "severity_score": float, # 0-100 (weighted feature calculation)
+    "plant_status": str,     # "Sehat" | "Terinfeksi"
+    "severity_level": str,   # "Sehat" | "Ringan" | "Sedang" | "Berat" | "Sangat Berat"
+    "fuzzy_score": float,    # 0-100 (Sugeno weighted average)
+    "severity_score": float, # 0-100 (weighted, 6 fitur, tanpa dark_ratio)
     "features": {
-        "spot_area": float,
-        "color_change": float,
-        "yellow_ratio": float,
-        "brown_ratio": float,
-        "dark_ratio": float,
-        "spot_count": int,
-        "texture_var": float,
+        "spot_area": float,     # ✅ used in severity
+        "color_change": float,  # ✅ used in severity
+        "yellow_ratio": float,  # ✅ used in severity
+        "brown_ratio": float,   # ✅ used in severity
+        "dark_ratio": float,    # ❌ extracted & stored, not used in severity
+        "spot_count": int,      # ✅ used in severity
+        "texture_var": float,   # ✅ used in severity
     }
 }
 ```
