@@ -3,6 +3,21 @@ import type { PredictionData, SeverityLevel } from "@/app/types";
 import { SEVERITY_META } from "@/app/types";
 import { severityColorClasses, formatPercent, formatNumber } from "@/app/lib/utils";
 
+const STATUS_REFERENCE: Array<{
+  level: SeverityLevel;
+  range: string;
+  desc: string;
+}> = (Object.values(SEVERITY_META) as Array<{
+  level: SeverityLevel;
+  minScore: number;
+  maxScore: number;
+  description: string;
+}>).map((m) => ({
+  level: m.level,
+  range: `${m.minScore} – ${m.maxScore}`,
+  desc: m.description,
+}));
+
 type Props = {
   data: PredictionData;
   onRetake: () => void;
@@ -120,6 +135,68 @@ export default function ResultCard({ data, onRetake }: Props) {
             suffix=""
             digits={2}
           />
+        </div>
+      </div>
+
+      {/* Referensi kategori status & tingkat keparahan */}
+      <div className="p-5 md:p-6 border-b-2 border-border-default">
+        <p className="xs-semibold text-text-placeholder uppercase tracking-wider mb-2">
+          Referensi Kategori
+        </p>
+        <p className="xs-default text-text-placeholder mb-4 leading-relaxed">
+          Skor Severity 0–100 dipetakan ke 5 kategori berikut. Hasil diagnosis
+          Anda saat ini masuk kategori{" "}
+          <span className="xs-semibold text-text-heading">
+            {data.plant_status === "Sehat"
+              ? `Sehat`
+              : `Terinfeksi ${data.severity_level}`}
+          </span>
+          .
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+          {STATUS_REFERENCE.map((s) => {
+            const isActive =
+              data.severity_level === s.level ||
+              (data.plant_status === "Sehat" && s.level === "Sehat") ||
+              (data.plant_status === "Terinfeksi" && s.level === data.severity_level);
+            const accent = severityColorClasses(
+              s.level as SeverityLevel,
+            );
+            return (
+              <div
+                key={s.level}
+                className={`border-2 rounded-2xl p-3 transition-colors ${
+                  isActive
+                    ? `${accent.border} ${accent.bg}`
+                    : "border-border-default bg-neutral-white"
+                }`}
+              >
+                <div className="flex items-start justify-between mb-1.5 gap-2">
+                  <p
+                    className={`sm-semibold leading-tight ${
+                      isActive ? accent.text : "text-text-heading"
+                    }`}
+                  >
+                    {s.level === "Sehat"
+                      ? "Sehat"
+                      : `Terinfeksi ${s.level}`}
+                  </p>
+                  <span
+                    className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                      isActive
+                        ? `${accent.pill} border-transparent`
+                        : "bg-neutral-surface text-text-heading border-border-default"
+                    }`}
+                  >
+                    {s.range}
+                  </span>
+                </div>
+                <p className="text-[11px] text-text-placeholder leading-snug">
+                  {s.desc}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
